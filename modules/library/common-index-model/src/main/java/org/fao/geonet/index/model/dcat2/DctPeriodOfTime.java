@@ -27,8 +27,8 @@ import lombok.NoArgsConstructor;
 public class DctPeriodOfTime {
 
   @XmlElement(namespace = DCAT_URI)
-  Date startDate;
+  RdfLiteral startDate;
 
   @XmlElement(namespace = DCAT_URI)
-  Date endDate;
+  RdfLiteral endDate;
 }

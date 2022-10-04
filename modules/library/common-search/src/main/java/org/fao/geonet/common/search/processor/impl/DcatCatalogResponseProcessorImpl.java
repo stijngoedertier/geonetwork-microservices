@@ -9,6 +9,8 @@ import static org.fao.geonet.index.model.dcat2.Namespaces.DCAT_PREFIX;
 import static org.fao.geonet.index.model.dcat2.Namespaces.DCAT_URI;
 import static org.fao.geonet.index.model.dcat2.Namespaces.RDF_PREFIX;
 import static org.fao.geonet.index.model.dcat2.Namespaces.RDF_URI;
+import static org.fao.geonet.index.model.dcat2.Namespaces.XSD_PREFIX;
+import static org.fao.geonet.index.model.dcat2.Namespaces.XSD_URI;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -62,6 +64,9 @@ public class DcatCatalogResponseProcessorImpl extends AbstractResponseProcessor 
     generator.writeStartDocument("UTF-8", "1.0");
     generator.writeStartElement(RDF_PREFIX, "RDF", RDF_URI);
     generator.writeNamespace(RDF_PREFIX, RDF_URI);
+    generator.writeNamespace(XSD_PREFIX, XSD_URI);
+    generator.writeStartElement(DCAT_PREFIX, "Catalog", DCAT_URI);
+    generator.writeNamespace(DCAT_PREFIX, DCAT_URI);
     generator.writeCharacters("");
     generator.flush();
 
@@ -70,6 +75,7 @@ public class DcatCatalogResponseProcessorImpl extends AbstractResponseProcessor 
       writeItem(generator, streamToClient, doc);
     }, false);
 
+    generator.writeEndElement();
     generator.writeEndElement();
     generator.writeEndDocument();
     generator.flush();
@@ -93,7 +99,9 @@ public class DcatCatalogResponseProcessorImpl extends AbstractResponseProcessor 
 
       String dcatXml = sw.toString();
       OutputStreamWriter osw = new OutputStreamWriter(stream);
+      osw.write("<dcat:record>\n");
       osw.write(dcatXml);
+      osw.write("\n</dcat:record>\n");
       osw.flush();
     } catch (JAXBException | IOException e) {
       String msg = String.format("Unable to parse document \"%s\"...:",

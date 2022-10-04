@@ -74,8 +74,8 @@ public class Resource extends Base {
    * For INSPIRE metadata, this property SHOULD be used with the URIs of the "Limitations on public
    * access" code list operated by the INSPIRE Registry</p>
    */
-  @XmlElement(namespace = DCAT_URI)
-  List<DcatAccessRights> accessRights = new ArrayList();
+  @XmlElement(namespace = DCT_URI)
+  List<DctAccessRights> accessRights = new ArrayList();
 
   @XmlElement(namespace = DCT_URI)
   DcatLicenseDocumentContainer license;

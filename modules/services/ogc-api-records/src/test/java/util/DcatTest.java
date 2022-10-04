@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import javax.xml.bind.JAXBContext;
@@ -16,7 +18,7 @@ import javax.xml.bind.Marshaller;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.fao.geonet.index.model.dcat2.Dataset;
-import org.fao.geonet.index.model.dcat2.DcatAccessRights;
+import org.fao.geonet.index.model.dcat2.DctAccessRights;
 import org.fao.geonet.index.model.dcat2.DcatDistribution;
 import org.fao.geonet.index.model.dcat2.DcatDistributionContainer;
 import org.fao.geonet.index.model.dcat2.DcatDocument;
@@ -27,7 +29,7 @@ import org.fao.geonet.index.model.dcat2.DcatRelation;
 import org.fao.geonet.index.model.dcat2.DcatRelationship;
 import org.fao.geonet.index.model.dcat2.FoafDocument;
 import org.fao.geonet.index.model.dcat2.ProvAttribution;
-import org.fao.geonet.index.model.dcat2.ProvenanceStatement;
+import org.fao.geonet.index.model.dcat2.RdfLiteral;
 import org.fao.geonet.index.model.dcat2.RdfResource;
 import org.fao.geonet.index.model.dcat2.RightsStatement;
 import org.fao.geonet.index.model.dcat2.SkosConcept;
@@ -42,8 +44,8 @@ public class DcatTest {
   public void testJsonToDcat() throws IOException {
     String identifier = "1567-765175-6561756";
     Dataset dcatDataset = Dataset.builder()
-        .title(List.of("Rivers on earth"))
-        .description(List.of("Water drop ..."))
+        .title(List.of(new RdfLiteral("en", null, "Rivers on earth")))
+        .description(List.of(new RdfLiteral("en",null, "Water drop ...")))
         .identifier(List.of(identifier))
         .subject(List.of(Subject.builder()
                 .skosConcept(
@@ -68,7 +70,7 @@ public class DcatTest {
                 .build()).build()))
         .spatialResolutionInMeters(List.of(new BigDecimal(25000)))
         .temporalResolution(List.of(Duration.ofDays(15)))
-        .accessRights(List.of(DcatAccessRights.builder()
+        .accessRights(List.of(DctAccessRights.builder()
             .rightsStatement(RightsStatement.builder()
                 .label(
                     "public access limited according to Article 13(1)(b) of the INSPIRE Directive")
@@ -81,7 +83,8 @@ public class DcatTest {
         .conformsTo(
             new RdfResource(null, "http://iso19115-3.schema.org", null)
         )
-        .created(new Date())
+        .created(new RdfLiteral(null, "xsd:Date", LocalDateTime.now().format(
+            DateTimeFormatter.ISO_DATE_TIME)))
         .isReferencedBy(List.of(new RdfResource(null, "https://isReferencedBy", null)))
         .relation(List.of(new RdfResource(null, "https://relation", null)))
         .language(List.of(
@@ -102,7 +105,9 @@ public class DcatTest {
         .comment(List.of("Comments ..."))
         .distribution(List.of(DcatDistributionContainer.builder()
             .distribution(DcatDistribution.builder()
-                .accessUrl("https://sdi.eea.europa.eu/webdav/continental/europe/natural_areas/birds_directive/eea_v_3035_10_mio_art12-2008-2012_i_2008-2012_v01_r01/Art12-2008-2012_SHP")
+                .accessUrl(new RdfResource(
+                    null,
+                    "https://sdi.eea.europa.eu/webdav/continental/europe/natural_areas/birds_directive/eea_v_3035_10_mio_art12-2008-2012_i_2008-2012_v01_r01/Art12-2008-2012_SHP"))
                 .build()).build()))
         .license(DcatLicenseDocumentContainer.builder()
             // TODO .resource("https://creativecommons.org/publicdomain/zero/1.0/deed")

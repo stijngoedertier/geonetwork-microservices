@@ -9,6 +9,7 @@ import static org.fao.geonet.index.model.dcat2.Dataset.ACCRUAL_PERIODICITY_TO_IS
 import static org.fao.geonet.index.model.dcat2.Dataset.ACCRUAL_PERIODICITY_URI_PREFIX;
 import static org.fao.geonet.index.model.gn.IndexRecordFieldNames.Codelists.topic;
 import static org.fao.geonet.index.model.gn.IndexRecordFieldNames.CommonField.defaultText;
+import static org.fao.geonet.index.model.gn.IndexRecordFieldNames.CommonField.link;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -16,13 +17,12 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,20 +39,25 @@ import org.fao.geonet.index.model.dcat2.DcatDistribution;
 import org.fao.geonet.index.model.dcat2.DcatDistribution.DcatDistributionBuilder;
 import org.fao.geonet.index.model.dcat2.DcatDistributionContainer;
 import org.fao.geonet.index.model.dcat2.DcatDocument;
+import org.fao.geonet.index.model.dcat2.DctAccessRights;
 import org.fao.geonet.index.model.dcat2.DctLocation;
 import org.fao.geonet.index.model.dcat2.DctPeriodOfTime;
 import org.fao.geonet.index.model.dcat2.DctPeriodOfTime.DctPeriodOfTimeBuilder;
+import org.fao.geonet.index.model.dcat2.DctPublisher;
 import org.fao.geonet.index.model.dcat2.DctSpatial;
 import org.fao.geonet.index.model.dcat2.DctTemporal;
 import org.fao.geonet.index.model.dcat2.FoafDocument;
+import org.fao.geonet.index.model.dcat2.FoafOrganization;
 import org.fao.geonet.index.model.dcat2.ProvActivity;
 import org.fao.geonet.index.model.dcat2.ProvGenerated;
 import org.fao.geonet.index.model.dcat2.ProvHadPlan;
 import org.fao.geonet.index.model.dcat2.ProvQualifiedAssociation;
 import org.fao.geonet.index.model.dcat2.Provenance;
 import org.fao.geonet.index.model.dcat2.ProvenanceStatement;
+import org.fao.geonet.index.model.dcat2.RdfLiteral;
 import org.fao.geonet.index.model.dcat2.RdfResource;
 import org.fao.geonet.index.model.dcat2.ResourceContainer;
+import org.fao.geonet.index.model.dcat2.RightsStatement;
 import org.fao.geonet.index.model.dcat2.SkosConcept;
 import org.fao.geonet.index.model.dcat2.Subject;
 import org.fao.geonet.index.model.dcat2.VcardContact;
@@ -122,6 +127,7 @@ public class DcatConverter {
       String language = record.getMainLanguage() == null
           ? defaultLanguage : record.getMainLanguage();
       String languageUpperCase = language.toUpperCase();
+      String languageAlpha2 = RdfLiteral.mapLanguageCode(language);
 
       List<String> resourceLanguage = record.getResourceLanguage();
 
@@ -137,8 +143,14 @@ public class DcatConverter {
           .identifier(record.getResourceIdentifier().stream()
               .map(c -> c.getCode()).collect(
                   Collectors.toList()))
-          .title(listOfNullable(record.getResourceTitle().get(defaultText)))
-          .description(listOfNullable(record.getResourceAbstract().get(defaultText)))
+          .title(listOfNullable(new RdfLiteral(
+              languageAlpha2,
+              null,
+              record.getResourceTitle().get(defaultText))))
+          .description(listOfNullable(new RdfLiteral(
+              languageAlpha2,
+              null,
+              record.getResourceAbstract().get(defaultText))))
           .landingPage(listOfNullable(DcatDocument.builder()
               .foafDocument(FoafDocument.builder()
                   .about(formatterConfiguration.buildLandingPageLink(
@@ -156,7 +168,12 @@ public class DcatConverter {
                   new RdfResource(null, "dcat:" + RESSOURCE_TYPE_MAPPING.get(t), null))
               .collect(Collectors.toList()))
           // INSPIRE <dct:type rdf:resource="{$ResourceTypeCodelistUri}/{$ResourceType}"/>
-          .modified(toDate(record.getChangeDate()))
+          .modified(
+              new RdfLiteral(
+                  null,
+                  "xsd:dateTime",
+                  toDateTimeString(record.getChangeDate())
+              ))
           .theme(
               Optional.ofNullable(record.getCodelists().get(topic))
                   .map(Collection::stream)
@@ -171,20 +188,39 @@ public class DcatConverter {
               // TODO: skos:inScheme
               // See https://github.com/SEMICeu/iso-19139-to-dcat-ap/blob/master/iso-19139-to-dcat-ap.xsl#L2803-L2864
               .skosConcept(SkosConcept.builder()
+                  .about(t.get(link))
                   .prefLabel(t.get(defaultText))
                   .build()).build()).collect(Collectors.toList()));
 
       record.getResourceDate().stream()
           .filter(d -> "creation".equals(d.getType()))
-          .forEach(d -> datasetBuilder.created(toDate(d.getDate())));
+          .forEach(d -> datasetBuilder.created(
+              new RdfLiteral(
+                  null,
+                  "xsd:dateTime",
+                  toDateTimeString(d.getDate())
+              )
+          ));
 
       record.getResourceDate().stream()
           .filter(d -> "publication".equals(d.getType()))
-          .forEach(d -> datasetBuilder.issued(toDate(d.getDate())));
+          .forEach(d -> datasetBuilder.issued(
+              new RdfLiteral(
+              null,
+          "xsd:dateTime",
+                  toDateTimeString(d.getDate())
+              )
+          ));
 
       record.getResourceDate().stream()
           .filter(d -> "revision".equals(d.getType()))
-          .forEach(d -> datasetBuilder.modified(toDate(d.getDate())));
+          .forEach(d -> datasetBuilder.modified(
+              new RdfLiteral(
+                  null,
+                  "xsd:dateTime",
+                  toDateTimeString(d.getDate())
+              )
+          ));
 
       // TODO: Convert to meter ?
       datasetBuilder.spatialResolutionInMeters(
@@ -266,10 +302,20 @@ public class DcatConverter {
           record.getResourceTemporalExtentDateRange().stream().map(range -> {
             DctPeriodOfTimeBuilder periodOfTime = DctPeriodOfTime.builder();
             if (StringUtils.isNotEmpty(range.getGte())) {
-              periodOfTime.startDate(toDate(range.getGte()));
+              periodOfTime.startDate(
+                  new RdfLiteral(
+                      null,
+                      "xsd:dateTime",
+                      toDateTimeString(range.getGte())
+                  ));
             }
             if (StringUtils.isNotEmpty(range.getLte())) {
-              periodOfTime.endDate(toDate(range.getLte()));
+              periodOfTime.endDate(
+                  new RdfLiteral(
+                      null,
+                      "xsd:dateTime",
+                      toDateTimeString(range.getLte())
+                  ));
             }
             return DctTemporal.builder()
                 .periodOfTime(periodOfTime.build())
@@ -278,8 +324,14 @@ public class DcatConverter {
 
       record.getLinks().stream().forEach(link -> {
         DcatDistributionBuilder dcatDistributionBuilder = DcatDistribution.builder()
-            .title(listOfNullable(link.getName()))
-            .description(listOfNullable(link.getDescription()))
+            .title(listOfNullable(new RdfLiteral(
+                languageAlpha2,
+                null,
+                link.getName())))
+            .description(listOfNullable(new RdfLiteral(
+                languageAlpha2,
+                null,
+                link.getDescription())))
             // TODO <dcat:accessService rdf:parseType="Resource">...
             // TODO: representation technique = gmd:MD_SpatialRepresentationTypeCode?
             .representationTechnique(Subject.builder()
@@ -287,8 +339,7 @@ public class DcatConverter {
                     .prefLabel(link.getProtocol()).build()).build());
 
         // TODO: depending on function/protocol build page/accessUrl/downloadUrl
-        dcatDistributionBuilder.accessUrl(link.getUrl());
-
+        dcatDistributionBuilder.accessUrl(new RdfResource(null, link.getUrl()));
         datasetBuilder.distribution(listOfNullable(DcatDistributionContainer.builder()
             .distribution(dcatDistributionBuilder.build()).build()));
       });
@@ -299,15 +350,53 @@ public class DcatConverter {
                   .contact(VcardContact.builder()
                       .title(contact.getOrganisation())
                       .role(contact.getRole())
-                      .hasEmail(contact.getEmail()).build()).build()
+                      .hasEmail(new RdfResource(
+                          null,
+                          "mailto://" + contact.getEmail())).build()).build()
           ).collect(Collectors.toList()));
+
+      datasetBuilder.publisher(
+          record.getContactForResource().stream().filter(contact ->
+              contact.getRole().equalsIgnoreCase("owner"))
+              .map(contact ->
+                  DctPublisher.builder().organization(
+                      FoafOrganization.builder()
+                          .name(contact.getOrganisation())
+                          .build()).build()
+          ).collect(Collectors.toList()));
+
+
+      datasetBuilder.accessRights(
+          record.getConstraints().stream()
+                .map(constraint ->
+                    DctAccessRights.builder()
+                        .rightsStatement(
+                            new RightsStatement(
+                                constraint.getLink(),
+                                null,
+                                constraint.getDefaultText())
+                        )
+                        .build()
+                ).collect(Collectors.toList())
+      );
+
 
       dcatDataset = datasetBuilder.build();
 
       catalogRecord = CatalogRecord.builder()
           .identifier(listOfNullable(record.getMetadataIdentifier()))
-          .created(toDate(record.getCreateDate()))
-          .modified(toDate(record.getChangeDate()))
+          .created(
+              new RdfLiteral(
+                  null,
+                  "xsd:dateTime",
+                  toDateTimeString(record.getCreateDate())
+              ))
+          .modified(
+              new RdfLiteral(
+                  null,
+                  "xsd:dateTime",
+                  toDateTimeString(record.getChangeDate())
+              ))
           .language(listOfNullable(new RdfResource(null,
               "http://publications.europa.eu/resource/authority/language/"
                   + language.toUpperCase())))
@@ -322,11 +411,12 @@ public class DcatConverter {
     return catalogRecord;
   }
 
-  private static Date toDate(String date) {
+  private static String toDateTimeString(String date) {
     try {
-      return Date.from(
-          Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(
-              date.length() == 10 ? date + "T00:00:00" : date)));
+      return LocalDateTime.parse(
+              date.length() == 10 ? date + "T00:00:00" : date,
+              DateTimeFormatter.ISO_DATE_TIME)
+          .format(DateTimeFormatter.ISO_DATE_TIME);
     } catch (Exception e) {
       e.printStackTrace();
       return null;

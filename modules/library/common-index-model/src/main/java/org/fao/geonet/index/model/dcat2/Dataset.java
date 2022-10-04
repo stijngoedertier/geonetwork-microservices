@@ -87,7 +87,7 @@ public class Dataset extends Resource {
   @XmlElement(namespace = FOAF_URI)
   List<DcatDocument> page;
 
-  /**
+  /**f
    * An available distribution of the dataset.
    */
   @XmlElement(namespace = DCAT_URI)

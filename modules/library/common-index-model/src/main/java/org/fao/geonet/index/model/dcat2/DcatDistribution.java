@@ -5,7 +5,6 @@
 
 package org.fao.geonet.index.model.dcat2;
 
-
 import static org.fao.geonet.index.model.dcat2.Namespaces.ADMS_URI;
 import static org.fao.geonet.index.model.dcat2.Namespaces.DCATAP_URI;
 import static org.fao.geonet.index.model.dcat2.Namespaces.DCAT_URI;
@@ -47,14 +46,14 @@ public class DcatDistribution {
    */
   @NonNull
   @XmlElement(name = "accessURL", namespace = DCAT_URI)
-  String accessUrl;
+  RdfResource accessUrl;
 
   /**
    * The URL of the downloadable file in a given format. E.g. CSV file or RDF file. The format is
    * indicated by the distribution's dct:format and/or dcat:mediaType
    */
   @XmlElement(name = "downloadURL", namespace = DCAT_URI)
-  List<String> downloadUrl = new ArrayList();
+  List<RdfResource> downloadUrl = new ArrayList();
 
   /**
    * A data service that gives access to the distribution of the dataset.
@@ -66,13 +65,13 @@ public class DcatDistribution {
    * A name given to the distribution.
    */
   @XmlElement(namespace = DCT_URI)
-  List<String> title = new ArrayList();
+  List<RdfLiteral> title = new ArrayList();
 
   /**
    * A free-text account of the distribution.
    */
   @XmlElement(namespace = DCT_URI)
-  List<String> description = new ArrayList();
+  List<RdfLiteral> description = new ArrayList();
 
   @XmlElement(namespace = ADMS_URI)
   Subject representationTechnique;
@@ -134,7 +133,7 @@ public class DcatDistribution {
    * A rights statement that concerns how the distribution is accessed.
    */
   @XmlElement(namespace = DCAT_URI)
-  List<DcatAccessRights> accessRights = new ArrayList();
+  List<DctAccessRights> accessRights = new ArrayList();
 
 
   /**
@@ -166,7 +165,7 @@ public class DcatDistribution {
    * Information about rights held in and over the distribution.
    */
   @XmlElement(namespace = DCAT_URI)
-  List<DcatAccessRights> rights = new ArrayList();
+  List<DctAccessRights> rights = new ArrayList();
 
   @XmlElement(namespace = RDFS_URI)
   List<String> comment = new ArrayList();

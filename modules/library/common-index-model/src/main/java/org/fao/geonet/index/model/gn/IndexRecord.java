@@ -152,6 +152,9 @@ public class IndexRecord extends IndexDocument {
   @JsonProperty(IndexRecordFieldNames.specificationConformance)
   private List<SpecificationConformance> specificationConformance = new ArrayList();
 
+  @JsonProperty(IndexRecordFieldNames.otherConstraintsObject)
+  private List<Constraint> constraints = new ArrayList();
+
   //  @JsonAnyGetter
   private Map<String, ArrayList<String>> otherProperties = new HashMap<>();
 

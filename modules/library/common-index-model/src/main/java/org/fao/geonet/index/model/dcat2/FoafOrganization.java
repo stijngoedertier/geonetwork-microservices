@@ -25,6 +25,7 @@ import lombok.NonNull;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class FoafOrganization extends RdfResource {
 
   @NonNull

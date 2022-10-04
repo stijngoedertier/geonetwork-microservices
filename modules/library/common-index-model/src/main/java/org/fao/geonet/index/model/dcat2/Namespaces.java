@@ -63,6 +63,13 @@ public class Namespaces {
   public static final String WDRS_URI = "http://www.w3.org/2007/05/powder-s#";
   public static final String SPDX_PREFIX = "spdx";
   public static final String SPDX_URI = "http://spdx.org/rdf/terms#";
+
+  public static final String XML_PREFIX = "xml";
+  public static final String XML_URI = "http://www.w3.org/XML/1998/namespace";
+
+  public static final String XSD_PREFIX = "xsd";
+  public static final String XSD_URI = "http://www.w3.org/2001/XMLSchema";
+
   public static final String XLINK_PREFIX = "xlink";
   public static final String XLINK_URI = "http://www.w3.org/1999/xlink";
 

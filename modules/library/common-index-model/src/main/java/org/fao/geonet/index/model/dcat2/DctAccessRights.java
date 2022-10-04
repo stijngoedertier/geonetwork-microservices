@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Builder
-public class DcatAccessRights {
+public class DctAccessRights {
 
   @XmlElement(name = "RightsStatement", namespace = DCT_URI)
   RightsStatement rightsStatement;

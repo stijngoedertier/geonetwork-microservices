@@ -33,10 +33,10 @@ import lombok.experimental.SuperBuilder;
 public abstract class Base {
 
   @XmlElement(namespace = DCT_URI)
-  List<String> title = new ArrayList();
+  List<RdfLiteral> title = new ArrayList();
 
   @XmlElement(namespace = DCT_URI)
-  List<String> description = new ArrayList();
+  List<RdfLiteral> description = new ArrayList();
   /**
    * A unique identifier of the item.
    */
@@ -54,7 +54,7 @@ public abstract class Base {
 
 
   @XmlElement(namespace = DCT_URI)
-  Date created;
+  RdfLiteral created;
 
   /**
    * The date of listing (i.e. formal recording) of the corresponding dataset or service in the
@@ -64,7 +64,7 @@ public abstract class Base {
    * of the dataset itself.</p>
    */
   @XmlElement(namespace = DCT_URI)
-  Date issued;
+  RdfLiteral issued;
 
   /**
    * Most recent date on which the catalog entry was changed, updated or modified.
@@ -73,7 +73,7 @@ public abstract class Base {
    * description of the dataset, and not the date of the dataset itself.</p>
    */
   @XmlElement(namespace = DCT_URI)
-  Date modified;
+  RdfLiteral modified;
 
 
   // Can be a LinguisticSystem
@@ -97,5 +97,5 @@ public abstract class Base {
    * A type of organisation that acts as a publisher.
    */
   @XmlElement(namespace = DCT_URI)
-  List<FoafOrganization> publisher = new ArrayList();
+  List<DctPublisher> publisher = new ArrayList();
 }
